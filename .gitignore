@@ -1,0 +1,51 @@
+# =========================
+# Keil uVision / MDK-ARM
+# =========================
+
+# User-specific files
+*.uvguix.*
+*.uvoptx
+
+# Build output folders
+Objects/
+Listings/
+DebugConfig/
+RTE/_Project/
+
+# Build output files
+*.o
+*.d
+*.crf
+*.map
+*.lst
+*.axf
+*.elf
+*.hex
+*.bin
+*.lib
+
+# Logs
+JLinkLog*.txt
+ULINK*.txt
+*.log
+
+# Temp / backup
+*.bak
+*.tmp
+*.dep
+
+# =========================
+# OS / Editor
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.vscode/
+.idea/
+
+# =========================
+# Optional: if generated locally and not needed
+# =========================
+# EventRecorder/
