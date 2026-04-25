@@ -4,33 +4,33 @@
 volatile int16_t hmc_x, hmc_y, hmc_z;
 volatile float yaw_hmc;
 
-// 我重写了HMC5883L的模块，把它从 软件I2C+私有库 的形式转变成了 硬件I2C+HAL库 的形式
-// 函数返回值重写为HAL_StatusTypeDef 使函数可以返回执行状态
-// 硬件地址宏定义在.h文件里，可右键跳转查看，硬件地址在寄存器手册里可以查看
+// 鎴戦噸鍐欎簡HMC5883L鐨勬ā鍧楋紝鎶婂畠浠?杞欢I2C+绉佹湁搴?鐨勫舰寮忚浆鍙樻垚浜?纭欢I2C+HAL搴?鐨勫舰寮?
+// 鍑芥暟杩斿洖鍊奸噸鍐欎负HAL_StatusTypeDef 浣垮嚱鏁板彲浠ヨ繑鍥炴墽琛岀姸鎬?
+// 纭欢鍦板潃瀹忓畾涔夊湪.h鏂囦欢閲岋紝鍙彸閿烦杞煡鐪嬶紝纭欢鍦板潃鍦ㄥ瘎瀛樺櫒鎵嬪唽閲屽彲浠ユ煡鐪?
 
 /*
-	参数一：硬件内 目标写入地址
-	参数二：要写入的字节
+	鍙傛暟涓€锛氱‖浠跺唴 鐩爣鍐欏叆鍦板潃
+	鍙傛暟浜岋細瑕佸啓鍏ョ殑瀛楄妭
 */
 
 HAL_StatusTypeDef HMC5883L_Write(uint8_t addr, uint8_t dat)
 {
-	// Mem就是把 找硬件地址、找硬件内地址、写/读 三位一体的硬件I2C函数。
+	// Mem灏辨槸鎶?鎵剧‖浠跺湴鍧€銆佹壘纭欢鍐呭湴鍧€銆佸啓/璇?涓変綅涓€浣撶殑纭欢I2C鍑芥暟銆?
 	
 	return HAL_I2C_Mem_Write(&hi2c2,
                              HMC5883L_ADDR,
-                             addr,						// 内部要操作的地址
-                             I2C_MEMADD_SIZE_8BIT,		// 寄存器有多宽
+                             addr,						// 鍐呴儴瑕佹搷浣滅殑鍦板潃
+                             I2C_MEMADD_SIZE_8BIT,		// 瀵勫瓨鍣ㄦ湁澶氬
                              &dat,						
-                             1,							// 要操作几字节
+                             1,							// 瑕佹搷浣滃嚑瀛楄妭
                              10);
 }
 
-// 原来读取函数是直接返回读取值，更改成了返回执行状态，增加了一个指针参数，用于储存返回值
+// 鍘熸潵璇诲彇鍑芥暟鏄洿鎺ヨ繑鍥炶鍙栧€硷紝鏇存敼鎴愪簡杩斿洖鎵ц鐘舵€侊紝澧炲姞浜嗕竴涓寚閽堝弬鏁帮紝鐢ㄤ簬鍌ㄥ瓨杩斿洖鍊?
 
 /*
-	参数一：硬件内 目标读取地址
-	参数二：返回值将要写入的变量的指针
+	鍙傛暟涓€锛氱‖浠跺唴 鐩爣璇诲彇鍦板潃
+	鍙傛暟浜岋細杩斿洖鍊煎皢瑕佸啓鍏ョ殑鍙橀噺鐨勬寚閽?
 */
 
 HAL_StatusTypeDef HMC5883L_Read(uint8_t addr, uint8_t *dat)
@@ -59,15 +59,15 @@ HAL_StatusTypeDef HMC5883L_Init()
 {
 	HAL_Delay(100);
 	
-	// 最大输出速率（75HZ）
+	// 鏈€澶ц緭鍑洪€熺巼锛?5HZ锛?
 	if (HMC5883L_Write(HMC5883L_CRA, 0x78) != HAL_OK)
         return HAL_ERROR;
 	
-	// 默认增益
+	// 榛樿澧炵泭
 	if (HMC5883L_Write(HMC5883L_CRB, 0x20) != HAL_OK)
         return HAL_ERROR;
 	
-	// 连续测量
+	// 杩炵画娴嬮噺
 	if (HMC5883L_Write(HMC5883L_MR, 0x00) != HAL_OK)
         return HAL_ERROR;
 
@@ -83,7 +83,7 @@ HAL_StatusTypeDef HMC5883L_GetData(int16_t *x, int16_t *y, int16_t *z)
     if (HMC5883L_ReadBytes(HMC5883L_DOXMR, buf, 6) != HAL_OK)
         return HAL_ERROR;
 
-    // HMC5883L 连续寄存器顺序是:
+    // HMC5883L 杩炵画瀵勫瓨鍣ㄩ『搴忔槸:
     // 0x03 X_MSB
     // 0x04 X_LSB
     // 0x05 Z_MSB
@@ -101,13 +101,13 @@ HAL_StatusTypeDef HMC5883L_GetData(int16_t *x, int16_t *y, int16_t *z)
 
 //HAL_StatusTypeDef HMC5883L_GetData(int16_t *x, int16_t *y, int16_t *z)
 //{
-//	// 高位数据和低位数据，获取后拼起来
-//	// 这里采用读六次单字节再拼起来的方法
-//	// 更合理的是使用ReadByte函数一次性读取六个字节
-//	// 可以参考mpu6050.c的ReadByte写法
+//	// 楂樹綅鏁版嵁鍜屼綆浣嶆暟鎹紝鑾峰彇鍚庢嫾璧锋潵
+//	// 杩欓噷閲囩敤璇诲叚娆″崟瀛楄妭鍐嶆嫾璧锋潵鐨勬柟娉?
+//	// 鏇村悎鐞嗙殑鏄娇鐢≧eadByte鍑芥暟涓€娆℃€ц鍙栧叚涓瓧鑺?
+//	// 鍙互鍙傝€僲pu6050.c鐨凴eadByte鍐欐硶
 //	
-//	// 我重写了这个函数，把原来 直接在函数里修改指定变量 变成了 传入指针、修改指针指向的变量
-//	// 还增加了状态返回值
+//	// 鎴戦噸鍐欎簡杩欎釜鍑芥暟锛屾妸鍘熸潵 鐩存帴鍦ㄥ嚱鏁伴噷淇敼鎸囧畾鍙橀噺 鍙樻垚浜?浼犲叆鎸囬拡銆佷慨鏀规寚閽堟寚鍚戠殑鍙橀噺
+//	// 杩樺鍔犱簡鐘舵€佽繑鍥炲€?
 //	uint8_t data_h, data_l;
 //	if(HMC5883L_Read(HMC5883L_DOXMR, &data_h) != HAL_OK)
 //		return HAL_ERROR;
@@ -132,9 +132,9 @@ HAL_StatusTypeDef HMC5883L_GetData(int16_t *x, int16_t *y, int16_t *z)
 
 
 /*
- * 校准时请缓慢旋转模块/小车，尽量把各个姿态都扫到。
- * 你当前 HMC5883L_Init() 配的是 75Hz，所以 sample_delay_ms 建议 >= 15ms。
- * 常用参数：sample_count = 1000，sample_delay_ms = 20。
+ * 鏍″噯鏃惰缂撴參鏃嬭浆妯″潡/灏忚溅锛屽敖閲忔妸鍚勪釜濮挎€侀兘鎵埌銆?
+ * 浣犲綋鍓?HMC5883L_Init() 閰嶇殑鏄?75Hz锛屾墍浠?sample_delay_ms 寤鸿 >= 15ms銆?
+ * 甯哥敤鍙傛暟锛歴ample_count = 1000锛宻ample_delay_ms = 20銆?
  */
 HAL_StatusTypeDef HMC5883L_Calibrate(HMC5883L_Calib_t *calib,
                                      uint16_t sample_count,
@@ -211,8 +211,8 @@ HAL_StatusTypeDef HMC5883L_Calibrate(HMC5883L_Calib_t *calib,
     if (half_z > ref_half) ref_half = half_z;
 
     /*
-     * 这里必须是“参考半径 / 当前半径”。
-     * 这样量程偏小的轴会被放大到和最大轴一致。
+     * 杩欓噷蹇呴』鏄€滃弬鑰冨崐寰?/ 褰撳墠鍗婂緞鈥濄€?
+     * 杩欐牱閲忕▼鍋忓皬鐨勮酱浼氳鏀惧ぇ鍒板拰鏈€澶ц酱涓€鑷淬€?
      */
     calib->scale_x = ref_half / half_x;
     calib->scale_y = ref_half / half_y;
@@ -221,7 +221,7 @@ HAL_StatusTypeDef HMC5883L_Calibrate(HMC5883L_Calib_t *calib,
     return HAL_OK;
 }
 
-/* 校准参数使用方式：
+/* 鏍″噯鍙傛暟浣跨敤鏂瑰紡锛?
 float cal_x = ((float)raw_x - calib.offset_x) * calib.scale_x;
 float cal_y = ((float)raw_y - calib.offset_y) * calib.scale_y;
 float cal_z = ((float)raw_z - calib.offset_z) * calib.scale_z;

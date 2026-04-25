@@ -198,6 +198,8 @@ int main(void)
 			{
 				hmc_x_cal = ((float)hmc_x - hmc_calib.offset_x) * hmc_calib.scale_x;
 				hmc_y_cal = ((float)hmc_y - hmc_calib.offset_y) * hmc_calib.scale_y;
+//				hmc_x_cal = ((float)hmc_x+15) * 1.05;
+//				hmc_y_cal = ((float)hmc_y+285) * 1.00;
 				yaw_hmc = atan2f(hmc_y_cal, hmc_x_cal) * 57.2957795f;
 			}
 		}
